@@ -9,11 +9,8 @@ def fuel_required(mass):
 
 def fuel_for_module(mass):
 	fuel = fuel_required(mass)
-	# print(f"mass: {mass}, fuel: {fuel}")
-	fuel_for_fuel = fuel_required(fuel)
-
-	if fuel_for_fuel > 0:
-		return fuel + fuel_for_fuel + fuel_for_module(fuel_for_fuel)
+	if fuel > 0:
+		return fuel + fuel_for_module(fuel)
 	else:
 		return fuel
 
