@@ -1,2 +1,5 @@
 {
+	"python.pythonPath": "venv/bin/python",
+	"python.linting.mypyEnabled": true
+
 }

@@ -17,7 +17,7 @@ def fuel_for_module(mass):
 	else:
 		return fuel
 
-def compute_part_1(input: str) -> str:
+def compute_part_1(input: str) -> int:
 	module_masses = input.split("\n")
 	total = 0
 		
@@ -28,7 +28,7 @@ def compute_part_1(input: str) -> str:
 
 	return total
 
-def compute_part_2(input: str) -> str:
+def compute_part_2(input: str) -> int:
 	module_masses = input.split("\n")
 	total = 0
 		
