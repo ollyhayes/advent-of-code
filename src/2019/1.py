@@ -1,107 +1,7 @@
 from math import floor
 from typing import List
-
-input = """115919
-56833
-117651
-56733
-89472
-91010
-119618
-85667
-141042
-106401
-121495
-50136
-83755
-122558
-149188
-110381
-132060
-145791
-141381
-136467
-104712
-133530
-65297
-52640
-59637
-78410
-107791
-96909
-136738
-109794
-66831
-58426
-97955
-90496
-119294
-83101
-80466
-114370
-67631
-106482
-73996
-50367
-113976
-68998
-109714
-96308
-89350
-143077
-102052
-93325
-86870
-94449
-119448
-53472
-140668
-64989
-112056
-88880
-131335
-94943
-88061
-122883
-129059
-55345
-82362
-60500
-147652
-83147
-87106
-97384
-136883
-62198
-130290
-129715
-93082
-72179
-72109
-70604
-94894
-98139
-97056
-86236
-144191
-108008
-79225
-93551
-103116
-130702
-87599
-143630
-104476
-108922
-134209
-85636
-81591
-127980
-90425
-126133
-118135
-93722"""
-# input = "1969"
+import os
+import pytest
 
 def fuel_required(mass):
 	# print(mass)
@@ -117,7 +17,19 @@ def fuel_for_module(mass):
 	else:
 		return fuel
 
-def fuel_for_all_modules(module_masses: List[str]) -> str:
+def compute_part_1(input: str) -> str:
+	module_masses = input.split("\n")
+	total = 0
+		
+	for mass in module_masses:
+		fuel = fuel_required(mass)
+		# print(f"mass: {mass}, fuel: {fuel}")
+		total += fuel
+
+	return total
+
+def compute_part_2(input: str) -> str:
+	module_masses = input.split("\n")
 	total = 0
 		
 	for mass in module_masses:
@@ -127,12 +39,38 @@ def fuel_for_all_modules(module_masses: List[str]) -> str:
 
 	return total
 
+def main() -> int:
+	dirname = os.path.dirname(__file__)
+	filename = os.path.join(dirname, "1-input.txt")
+	with open(filename, "r") as input_file:
+		input = input_file.read()
 
-# print(fuel_for_all_modules(["14", "14"]))
-# print(fuel_for_all_modules(["1969"]))
-# print(fuel_for_all_modules(["100756"]))
-# print(fuel_for_all_modules(["12"]))
-# print(fuel_for_all_modules(["14"]))
-# print(fuel_for_all_modules(["1969"]))
-# print(fuel_for_all_modules(["100756"]))
-print(fuel_for_all_modules(input.split("\n")))
+	print(compute_part_2(input))
+
+	return 0
+
+if __name__ == '__main__':
+	exit(main())
+
+@pytest.mark.parametrize(
+	("input", "expected"),
+	(
+		(12, 2),
+		(14, 2),
+		(1969, 654),
+		(100756, 33583)
+	)
+)
+def test_part_1(input, expected) -> None:
+	assert compute_part_1(str(input)) == expected
+
+@pytest.mark.parametrize(
+	("input", "expected"),
+	(
+		(14, 2),
+		(1969, 966),
+		(100756, 50346)
+	)
+)
+def test_part_2(input, expected) -> None:
+	assert compute_part_2(str(input)) == expected
