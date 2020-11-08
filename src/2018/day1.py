@@ -2,34 +2,40 @@ import os
 from typing import List, Tuple, Dict, Set
 
 def compute_part_1(input: str) -> int:
-	return int(input)
-	# inputs = parse_input(input)
+	operations = input.split("\n")
+	frequency = 0
 
-	# path1 = plot2(inputs[0])
-	# path2 = plot2(inputs[1])
+	for operation in operations:
+		operator = operation[:1]
+		value = int(operation[1:])
 
-	# intersections = path1.keys() & path2.keys()
-	# distances = [abs(position[0]) + abs(position[1]) for position in intersections]
-
-	# return min(distances)
-
+		if operator == "+":
+			frequency += value
+		elif operator == "-":
+			frequency -= value
+	
+	return frequency
 
 def compute_part_2(input: str) -> int:
-	return int(input)
-	# inputs = parse_input(input)
+	operations = input.split("\n")
 
-	# path1 = plot2(inputs[0])
-	# path2 = plot2(inputs[1])
+	frequency = 0
+	reached_frequencies = set()
 
-	# intersection_points = path1.keys() & path2.keys()
+	while True:
+		for operation in operations:
+			operator = operation[:1]
+			value = int(operation[1:])
 
-	# distances = [
-	# 	path1[intersection_point] + path2[intersection_point]
-	# 	for intersection_point
-	# 	in intersection_points
-	# ]
+			if operator == "+":
+				frequency += value
+			elif operator == "-":
+				frequency -= value
+			
+			if frequency in reached_frequencies:
+				return frequency
 
-	# return min(distances) + 2
+			reached_frequencies.add(frequency)
 
 def main() -> int:
 	dirname = os.path.dirname(__file__)
