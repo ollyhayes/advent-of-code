@@ -12,31 +12,27 @@ class Parameter():
 
 def op_1(index, program, left: Parameter, right: Parameter, output: Parameter):
 	value = left.value + right.value
-
+	assert output.write
 	output.write(value)
-	return index + 4, program
 
 def op_2(index, program, left: Parameter, right: Parameter, output: Parameter):
 	value = left.value * right.value
-
+	assert output.write
 	output.write(value)
-	return index + 4, program
 
 def op_3(index: int, program: List[int], position: Parameter):
 	input = int(sys.stdin.read(1))
-
+	assert position.write
 	position.write(input)
-	return index + 2, program
 
 def op_4(index: int, program: List[int], output: Parameter):
 	print(f"output: {output.value}")
 
-	return index + 2, program
-
 def op_99(index, program):
-	return len(program), program
+	print(f"terminating")
+	raise Exception("Terminating")
 
-ops = {
+ops: Dict[int, Tuple[int, Callable]] = {
 	1: (3, op_1),
 	2: (3, op_2),
 	3: (1, op_3),
@@ -68,7 +64,8 @@ def compute_part_1(input: str) -> List[int]:
 				parameters.append(Parameter(program[value], value, lambda value_to_write: write(value, value_to_write)))
 
 		print(f"i: {index}, op_code: {op_code}, program: {program[index:index+10]}..., parameters: {[(parameter.value, parameter.position) for parameter in parameters]}")
-		index, program = operation(index, program, *parameters)
+		operation(index, program, *parameters)
+		index += parameter_count + 1
 
 	# print(f"noun: {noun}, verb: {verb}, program: {program[:10]}")
 	return program
