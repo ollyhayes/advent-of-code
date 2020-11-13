@@ -21,22 +21,50 @@ def op_2(index, program, left: Parameter, right: Parameter, output: Parameter):
 	output.write(value)
 
 def op_3(index: int, program: List[int], position: Parameter):
+	print(f"enter value")
 	input = int(sys.stdin.read(1))
+	print(f"received: {input}")
 	assert position.write
 	position.write(input)
 
 def op_4(index: int, program: List[int], output: Parameter):
 	print(f"output: {output.value}")
 
+def op_5(index, program, if_value: Parameter, new_index: Parameter):
+	if if_value.value:
+		return new_index.value
+
+def op_6(index, program, if_not_value: Parameter, new_index: Parameter):
+	if not if_not_value.value:
+		return new_index.value
+
+def op_7(index, program, left: Parameter, right: Parameter, output: Parameter):
+	assert output.write
+	if left.value < right.value:
+		output.write(1)
+	else:
+		output.write(0)
+
+def op_8(index, program, left: Parameter, right: Parameter, output: Parameter):
+	assert output.write
+	if left.value == right.value:
+		output.write(1)
+	else:
+		output.write(0)
+
 def op_99(index, program):
 	print(f"terminating")
-	raise Exception("Terminating")
+	return len(program)
 
 ops: Dict[int, Tuple[int, Callable]] = {
 	1: (3, op_1),
 	2: (3, op_2),
 	3: (1, op_3),
 	4: (1, op_4),
+	5: (2, op_5),
+	6: (2, op_6),
+	7: (3, op_7),
+	8: (3, op_8),
 	99: (0, op_99)
 }
 
@@ -64,8 +92,7 @@ def compute_part_1(input: str) -> List[int]:
 				parameters.append(Parameter(program[value], value, lambda value_to_write: write(value, value_to_write)))
 
 		print(f"i: {index}, op_code: {op_code}, program: {program[index:index+10]}..., parameters: {[(parameter.value, parameter.position) for parameter in parameters]}")
-		operation(index, program, *parameters)
-		index += parameter_count + 1
+		index = operation(index, program, *parameters) or index + 1 + parameter_count
 
 	return program
 
@@ -78,8 +105,8 @@ def main() -> int:
 	with open(filename, "r") as input_file:
 		input = input_file.read()
 
-	print(f"part1: {compute_part_1(input)}")
-	print(f"part2: {compute_part_2(input)}")
+	compute_part_1(input)
+	# print(f"part2: {compute_part_2(input)}")
 
 	return 0
 
