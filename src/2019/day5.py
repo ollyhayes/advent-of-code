@@ -1,50 +1,35 @@
 import os
 import sys, tty, termios
-from typing import List, Tuple, Dict, Set
+from typing import List, Tuple, Dict, Set, Callable, Optional
+from itertools import zip_longest
+from dataclasses import dataclass
 
-def get_referenced_value(index, program):
-	return program[program[index]]
+@dataclass
+class Parameter():
+	value: int
+	position: Optional[int]
+	write: Optional[Callable[[int], None]]
 
-def op_1(index, program):
-	left = get_referenced_value(index + 1, program)
-	right = get_referenced_value(index + 2, program)
-	value = left + right
-	position = program[index + 3]
+def op_1(index, program, left: Parameter, right: Parameter, output: Parameter):
+	value = left.value + right.value
 
-	print(f"i: {index}, op_code: 1, param_info: {{param_info}}, program: {program[index:index+10]}..., position: {position}, {left}+{right}")
-
-	program[position] = value
+	output.write(value)
 	return index + 4, program
 
-def op_2(index, program):
-	left = get_referenced_value(index + 1, program)
-	right = get_referenced_value(index + 2, program)
-	value = left * right
-	position = program[index + 3]
+def op_2(index, program, left: Parameter, right: Parameter, output: Parameter):
+	value = left.value * right.value
 
-	print(f"i: {index}, op_code: 2, param_info: {{param_info}}, program: {program[index:index+10]}..., position: {position}, {left}*{right}")
-
-	program[position] = value
+	output.write(value)
 	return index + 4, program
 
-def op_3(index, program):
+def op_3(index: int, program: List[int], position: Parameter):
 	input = int(sys.stdin.read(1))
-	position = program[index + 1]
 
-	print(f"i: {index}, op_code: 3, param_info: param_info, program: {program[index:index+10]}..., position: {position}, input: {input}")
-
-	program[position] = input
+	position.write(input)
 	return index + 2, program
 
-def op_4(index, program):
-	position = get_referenced_value(index+ 1, program)
-
-	try:
-		output = program[position]
-		print(f"i: {index}, op_code: 4, param_info: {{param_info}}, program: {program[index:index+10]}..., position: {position}, output: {output}")
-	except:
-		print(f"i: {index}, op_code: 4, param_info: {{param_info}}, program: {program[index:index+10]}..., position: {position}, err")
-		raise
+def op_4(index: int, program: List[int], output: Parameter):
+	print(f"output: {output.value}")
 
 	return index + 2, program
 
@@ -52,11 +37,11 @@ def op_99(index, program):
 	return len(program), program
 
 ops = {
-	1: op_1,
-	2: op_2,
-	3: op_3,
-	4: op_4,
-	99: op_99
+	1: (3, op_1),
+	2: (3, op_2),
+	3: (1, op_3),
+	4: (1, op_4),
+	99: (0, op_99)
 }
 
 def compute_part_1(input: str) -> List[int]:
@@ -65,10 +50,25 @@ def compute_part_1(input: str) -> List[int]:
 	while index < len(program):
 		op_code_info = program[index]
 		op_code = int(str(op_code_info)[-2:])
-		param_info = int(str(op_code_info)[0:-2] or 0)
-		# print(f"i: {index}, op_code: {op_code}, param_info: {param_info}, program: {program[:10]}...")
-		operation = ops[op_code]
-		index, program = operation(index, program)
+		param_info = str(op_code_info)[0:-2] or "0"
+
+		parameter_count, operation = ops[op_code]
+
+		parameter_values = [program[index + 1 + i] for i in range(0, parameter_count)]
+		parameter_types = reversed(param_info)
+
+		def write(position, value):
+			program[position] = value
+
+		parameters = []
+		for value, parameter_type in zip_longest(parameter_values, parameter_types):
+			if parameter_type == 1:
+				parameters.append(Parameter(value, None, None))
+			else:
+				parameters.append(Parameter(program[value], value, lambda value_to_write: write(value, value_to_write)))
+
+		print(f"i: {index}, op_code: {op_code}, program: {program[index:index+10]}..., parameters: {[(parameter.value, parameter.position) for parameter in parameters]}")
+		index, program = operation(index, program, *parameters)
 
 	# print(f"noun: {noun}, verb: {verb}, program: {program[:10]}")
 	return program
