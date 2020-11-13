@@ -1,6 +1,6 @@
 import os
 import sys, tty, termios
-from typing import List, Tuple, Dict, Set, Callable, Optional
+from typing import List, Tuple, Dict, Set, Callable, Optional, Union
 from itertools import zip_longest
 from dataclasses import dataclass
 
@@ -46,7 +46,7 @@ def compute_part_1(input: str) -> List[int]:
 	while index < len(program):
 		op_code_info = program[index]
 		op_code = int(str(op_code_info)[-2:])
-		param_info = str(op_code_info)[0:-2] or "0"
+		param_info: Union[str, List] = str(op_code_info)[0:-2] or []
 
 		parameter_count, operation = ops[op_code]
 
@@ -58,7 +58,7 @@ def compute_part_1(input: str) -> List[int]:
 
 		parameters = []
 		for value, parameter_type in zip_longest(parameter_values, parameter_types):
-			if parameter_type == 1:
+			if parameter_type == "1":
 				parameters.append(Parameter(value, None, None))
 			else:
 				parameters.append(Parameter(program[value], value, lambda value_to_write: write(value, value_to_write)))
@@ -67,7 +67,6 @@ def compute_part_1(input: str) -> List[int]:
 		operation(index, program, *parameters)
 		index += parameter_count + 1
 
-	# print(f"noun: {noun}, verb: {verb}, program: {program[:10]}")
 	return program
 
 def compute_part_2(input: str) -> int:
