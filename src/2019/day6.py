@@ -1,5 +1,5 @@
 import os
-from typing import List, Tuple, Dict, Set, Callable, Optional, Union, Set
+from typing import List, Tuple, Dict, Set, Callable, Optional, Union, Set, Generator
 from itertools import zip_longest
 from dataclasses import dataclass, field
 
@@ -70,7 +70,32 @@ def compute_part_1(input: str) -> int:
 	return orbit_count
 
 def compute_part_2(input: str) -> int:
-	return 1
+	orbits = list(input.split("\n"))
+	planets = parse_orbits(orbits)
+
+	def get_path_to_sun(planet: Planet) -> Generator:
+		distance = 1
+		while planet.orbits_planet:
+			planet = planet.orbits_planet
+			yield planet.name, (planet, distance)
+			distance += 1
+
+	santa_orbiting = planets["SAN"].orbits_planet
+	assert santa_orbiting
+	santa_to_sun = dict(get_path_to_sun(santa_orbiting))
+
+	you_orbiting = planets["YOU"].orbits_planet
+	assert you_orbiting
+	you_to_sun = dict(get_path_to_sun(you_orbiting))
+
+	intersection_keys = santa_to_sun.keys() & you_to_sun.keys()
+	distances = [
+		santa_to_sun[intersection_point][1] + you_to_sun[intersection_point][1]
+		for intersection_point
+		in intersection_keys
+	]
+
+	return min(distances)
 
 def main() -> int:
 	dirname = os.path.dirname(__file__)
@@ -79,10 +104,10 @@ def main() -> int:
 		input = input_file.read()
 
 	print(compute_part_1(input))
-	orbits = list(input.split("\n"))
-	planets = parse_orbits(orbits)
-	draw_system(list(planets.values()))
-	# print(f"part2: {compute_part_2(input)}")
+	# orbits = list(input.split("\n"))
+	# planets = parse_orbits(orbits)
+	# draw_system(list(planets.values()))
+	print(f"part2: {compute_part_2(input)}")
 
 	return 0
 
