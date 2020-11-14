@@ -47,7 +47,7 @@ def draw_system(planets: List[Planet]) -> None:
 
 			output.append(indent + f"{'└' if is_last else '├'}─{planet.name}")
 
-			path = "  " if is_last else "│ "
+			path = " " if is_last else "│"
 
 			inner(indent + path, planet.outer_planets)
 		
