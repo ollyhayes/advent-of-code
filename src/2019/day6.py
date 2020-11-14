@@ -34,6 +34,31 @@ def parse_orbits(orbits: List[str]) -> Dict[str, Planet]:
 def count_orbits(planet: Planet) -> int:
 	return 1 + count_orbits(planet.orbits_planet) if planet.orbits_planet else 0
 
+def find_root(planet: Planet) -> Planet:
+	return find_root(planet.orbits_planet) if planet.orbits_planet else planet
+
+def draw_system(planets: List[Planet]) -> None:
+	root = find_root(planets[0])
+	output = [root.name]
+
+	def inner(indent: str, planets: List[Planet]) -> None:
+		for planet in planets:
+			is_last = planet == planets[-1]
+
+			output.append(indent + f"{'└' if is_last else '├'}─{planet.name}")
+
+			path = "  " if is_last else "│ "
+
+			inner(indent + path, planet.outer_planets)
+		
+	inner("", root.outer_planets)
+	tree_drawing = "\n".join(output)
+
+	dirname = os.path.dirname(__file__)
+	filename = os.path.join(dirname, "day6_output_tree.txt")
+	with open(filename, "w") as output_file:
+		output_file.write(tree_drawing)
+
 def compute_part_1(input: str) -> int:
 	orbits = list(input.split("\n"))
 	planets = parse_orbits(orbits)
@@ -54,6 +79,9 @@ def main() -> int:
 		input = input_file.read()
 
 	print(compute_part_1(input))
+	orbits = list(input.split("\n"))
+	planets = parse_orbits(orbits)
+	draw_system(list(planets.values()))
 	# print(f"part2: {compute_part_2(input)}")
 
 	return 0
