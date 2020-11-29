@@ -124,7 +124,7 @@ def run_program(program: List[int], instance_name: str, input: Stream, output: S
 # def output_to_stdin(output: int) -> None:
 # 	print(f"output: {output}")
 
-def compute_output_signal(input_program: str, sequence: List[int]) -> int:
+def compute_output_signal_part_1(input_program: str, sequence: List[int]) -> int:
 	program = list(map(int, input_program.split(",")))
 
 	current_signal = 0
@@ -137,9 +137,6 @@ def compute_output_signal(input_program: str, sequence: List[int]) -> int:
 
 		run_program(program, str(i), input, output)
 		current_signal = output.read()
-
-		while current_signal == 0:
-			current_signal = output.read()
 		
 		print(f"completed iteration {i}, signal = {current_signal}")
 		print()
@@ -152,7 +149,7 @@ def compute_part_1(input: str) -> int:
 	for i in range(0, 3125):
 		phase_attempt = convert_to_base(i, 5)
 		if len(set(phase_attempt)) == len(phase_attempt):
-			output = max(output, compute_output_signal(input, [int(char) for char in phase_attempt]))
+			output = max(output, compute_output_signal_part_1(input, [int(char) for char in phase_attempt]))
 	
 	return output
 
@@ -163,6 +160,33 @@ def convert_to_base(input: int, base: int) -> str:
 		input //= 5
 
 	return value.zfill(5)
+
+def compute_output_signal_part_2(input_program: str, sequence: List[int]) -> int:
+	program = list(map(int, input_program.split(",")))
+
+	current_signal = 0
+
+	io = []
+
+	for i, phase in enumerate(sequence):
+		input, output = Stream(), Stream()
+		io.append((input, output))
+
+		input.write(phase)
+		input.write(current_signal)
+
+		run_program(program, str(i), input, output)
+		current_signal = output.read()
+
+		print(f"completed iteration {i}, signal = {current_signal}")
+		print()
+	
+	print("starting looping")
+
+	while True:
+		pass
+	
+	return current_signal
 
 def compute_part_2(input: str) -> int:
 	return 1

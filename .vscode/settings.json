@@ -1,5 +1,5 @@
 {
-	"python.pythonPath": "venv/bin/python",
+	"python.pythonPath": "/home/olly/tools/advent-of-code/venv/bin/python3",
 	"python.linting.mypyEnabled": true,
 	"python.testing.pytestArgs": [
 		"src"
