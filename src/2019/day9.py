@@ -41,21 +41,21 @@ class Stream():
 
 @dataclass
 class StdOut(Stream):
-	async def write(self, value: int) -> int:
-		print(f"Output: {value}")
+	async def write(self, value: int) -> None:
+		pass
 
-def input_from_stdin() -> int:
-	print(f"enter value")
-	input = int(sys.stdin.read(1))
-	print(f"received: {input}")
-	return input
+# def input_from_stdin() -> int:
+# 	print(f"enter value")
+# 	input = int(sys.stdin.read(1))
+# 	print(f"received: {input}")
+# 	return input
 
-def output_to_stdin(output: int) -> None:
-	print(f"output: {output}")
+# def output_to_stdin(output: int) -> None:
+# 	print(f"output: {output}")
 
 @dataclass
 class ProgramInfo():
-	program: List[int]
+	program: Dict[int, int]
 	input: Stream
 	output: Stream
 	instance_name: str
@@ -104,7 +104,7 @@ async def op_eq(index, program_info: ProgramInfo, left: Parameter, right: Parame
 		output.write(0)
 
 async def op_set_base(index, program_info: ProgramInfo, new_base: Parameter):
-	program_info.relative_base = new_base.value
+	program_info.relative_base += new_base.value
 
 async def op_terminate(index, program_info: ProgramInfo):
 	print(f"{program_info.instance_name}: terminating")
@@ -123,7 +123,7 @@ ops: Dict[int, Tuple[int, Callable]] = {
 	99: (0, op_terminate)
 }
 
-async def run_program(program: List[int], instance_name: str, input: Stream, output: Stream) -> List[int]:
+async def run_program(program: Dict[int, int], instance_name: str, input: Stream, output: Stream) -> Dict[int, int]:
 	index = 0
 	program_info = ProgramInfo(program, input, output, instance_name, 0)
 	while index < len(program):
@@ -145,49 +145,30 @@ async def run_program(program: List[int], instance_name: str, input: Stream, out
 				parameters.append(Parameter(value, None, None))
 			else: # position/relative mode
 				position = value + program_info.relative_base if parameter_type == "2" else value
-				parameters.append(Parameter(program[position], position, lambda value_to_write: write(position, value_to_write)))
+				parameters.append(Parameter(program.get(position, 0), position, lambda value_to_write: write(position, value_to_write)))
 
-		print(f"{instance_name}: i: {index}, program: {program[index:index+10]}..., parameters: {[(parameter.value, parameter.position) for parameter in parameters]}")
-		index = await operation(
-			index,
-			program_info,
-			*parameters) or index + 1 + parameter_count
+		# print(f"i: {index},\tprogram: {program}..., parameters: {[(parameter.value, parameter.position) for parameter in parameters]}")
+		print(f"{instance_name}: i: {index}, program: {print_range(index, program)}..., parameters: {[(parameter.value, parameter.position) for parameter in parameters]}")
+
+		new_index = await operation(index, program_info, *parameters) 
+		index = new_index if new_index is not None else index + 1 + parameter_count
 
 	return program
 
-async def compute_output_signal_part_1(input_program: str, sequence: List[int]) -> int:
-	program = list(map(int, input_program.split(",")))
+def print_range(index: int, program: Dict[int, int]) -> str:
+	return "[" + ",".join([str(program.get(index, "?")) for index in range(index, index + 10)]) + "]"
 
-	current_signal = 0
-
-	for i, phase in enumerate(sequence):
-		input, output = Stream(), Stream()
-
-		asyncio.create_task(run_program(program, str(i), input, output))
-
-		await input.write(phase)
-		await input.write(current_signal)
-
-		current_signal = await output.read()
-		
-		print(f"completed iteration {i}, signal = {current_signal}")
-		print()
-	
-	return current_signal
-
-def compute_part_1(input_program: str) -> None:
-	program = list(map(int, input_program.split(",")))
-	program = [109,1,204,-1,1001,100,1,100,1008,100,16,101,1006,101,0,99]
+async def compute(input_program: str, input_code: int) -> None:
+	program = {index: value for index, value in enumerate(map(int, input_program.split(",")))}
+	# program = {index: value for index, value in enumerate([109,1,204,-1,1001,100,1,100,1008,100,16,101,1006,101,0,99])}
+	# program = {index: value for index, value in enumerate([1102,34915192,34915192,7,4,7,99,0])}
+	# program = {index: value for index, value in enumerate([104,1125899906842624,99])}
 
 	input, output = Stream(), StdOut()
 
-	asyncio.run(run_program(program, "main", input, output))
+	await input.write(input_code)
 
-
-def compute_part_2(input: str) -> int:
-	output = 0
-	
-	return output
+	await run_program(program, "main", input, output)
 
 def main() -> int:
 	dirname = os.path.dirname(__file__)
@@ -195,9 +176,8 @@ def main() -> int:
 	with open(filename, "r") as input_file:
 		input = input_file.read()
 
-	compute_part_1(input)
-	# print(f"total maximum: {compute_part_1(input)}")
-	# print(f"part2: {compute_part_2(input)}")
+	asyncio.run(compute(input, 1))
+	asyncio.run(compute(input, 2))
 
 	return 0
 
