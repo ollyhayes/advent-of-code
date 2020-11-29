@@ -1,5 +1,8 @@
 import os
+from copy import copy
 import sys, tty, termios
+import asyncio
+from asyncio import Queue, gather
 from typing import List, Tuple, Dict, Set, Callable, Optional, Union, Protocol
 from itertools import zip_longest
 from dataclasses import dataclass, field
@@ -12,18 +15,23 @@ class Parameter():
 
 @dataclass
 class Stream():
-	buffer: List[int] = field(default_factory=list)
+	queue: Queue = field(default_factory=lambda: asyncio.Queue(1))
+	pipe_to: Optional["Stream"] = None
+	pipe_to_output: int = 0
 
-	def write(self, value: int) -> None:
-		self.buffer.append(value)
-		print(f"writing: {value}, buffer: {self.buffer}")
+	async def write(self, value: int) -> None:
+		if self.pipe_to:
+			await self.pipe_to.write(value)
+			self.pipe_to_output = value
+		else:
+			await self.queue.put(value)
 
-	# def pipe(self, stream: "Stream") -> None:
-	# 	stream.buffer = self.buffer
+	def pipe(self, stream: "Stream") -> None:
+		self.pipe_to = stream
 
-	def read(self) -> int:
-		value = self.buffer.pop(0)
-		print(f"reading: {value}, buffer: {self.buffer}")
+	async def read(self) -> int:
+		value = await self.queue.get()
+		# print(f"reading: {value}, queue: {self.queue}")
 		return value
 
 @dataclass
@@ -31,49 +39,52 @@ class ProgramInfo():
 	program: List[int]
 	input: Stream
 	output: Stream
+	instance_name: str
 
-def op_1(index, program_info: ProgramInfo, left: Parameter, right: Parameter, output: Parameter):
+async def op_1(index, program_info: ProgramInfo, left: Parameter, right: Parameter, output: Parameter):
 	value = left.value + right.value
 	assert output.write
 	output.write(value)
 
-def op_2(index, program_info: ProgramInfo, left: Parameter, right: Parameter, output: Parameter):
+async def op_2(index, program_info: ProgramInfo, left: Parameter, right: Parameter, output: Parameter):
 	value = left.value * right.value
 	assert output.write
 	output.write(value)
 
-def op_3(index: int, program_info: ProgramInfo, position: Parameter):
-	input = program_info.input.read()
+async def op_3(index: int, program_info: ProgramInfo, position: Parameter):
+	input = await program_info.input.read()
+	print(f"{program_info.instance_name}: <-- {input}")
 	assert position.write
 	position.write(input)
 
-def op_4(index: int, program_info: ProgramInfo, output: Parameter):
-	program_info.output.write(output.value)
+async def op_4(index: int, program_info: ProgramInfo, output: Parameter):
+	print(f"{program_info.instance_name}: --> {output.value}")
+	await program_info.output.write(output.value)
 
-def op_5(index, program_info: ProgramInfo, if_value: Parameter, new_index: Parameter):
+async def op_5(index, program_info: ProgramInfo, if_value: Parameter, new_index: Parameter):
 	if if_value.value:
 		return new_index.value
 
-def op_6(index, program_info: ProgramInfo, if_not_value: Parameter, new_index: Parameter):
+async def op_6(index, program_info: ProgramInfo, if_not_value: Parameter, new_index: Parameter):
 	if not if_not_value.value:
 		return new_index.value
 
-def op_7(index, program_info: ProgramInfo, left: Parameter, right: Parameter, output: Parameter):
+async def op_7(index, program_info: ProgramInfo, left: Parameter, right: Parameter, output: Parameter):
 	assert output.write
 	if left.value < right.value:
 		output.write(1)
 	else:
 		output.write(0)
 
-def op_8(index, program_info: ProgramInfo, left: Parameter, right: Parameter, output: Parameter):
+async def op_8(index, program_info: ProgramInfo, left: Parameter, right: Parameter, output: Parameter):
 	assert output.write
 	if left.value == right.value:
 		output.write(1)
 	else:
 		output.write(0)
 
-def op_99(index, program_info: ProgramInfo):
-	print(f"terminating")
+async def op_99(index, program_info: ProgramInfo):
+	print(f"{program_info.instance_name}: terminating")
 	return len(program_info.program)
 
 ops: Dict[int, Tuple[int, Callable]] = {
@@ -88,7 +99,7 @@ ops: Dict[int, Tuple[int, Callable]] = {
 	99: (0, op_99)
 }
 
-def run_program(program: List[int], instance_name: str, input: Stream, output: Stream) -> List[int]:
+async def run_program(program: List[int], instance_name: str, input: Stream, output: Stream) -> List[int]:
 	index = 0
 	while index < len(program):
 		op_code_info = program[index]
@@ -110,8 +121,11 @@ def run_program(program: List[int], instance_name: str, input: Stream, output: S
 			else:
 				parameters.append(Parameter(program[value], value, lambda value_to_write: write(value, value_to_write)))
 
-		print(f"instance: {instance_name}, i: {index}, program: {program[index:index+10]}..., parameters: {[(parameter.value, parameter.position) for parameter in parameters]}")
-		index = operation(index, ProgramInfo(program, input, output), *parameters) or index + 1 + parameter_count
+		print(f"{instance_name}: i: {index}, program: {program[index:index+10]}..., parameters: {[(parameter.value, parameter.position) for parameter in parameters]}")
+		index = await operation(
+			index,
+			ProgramInfo(program, input, output, instance_name),
+			*parameters) or index + 1 + parameter_count
 
 	return program
 
@@ -124,7 +138,7 @@ def run_program(program: List[int], instance_name: str, input: Stream, output: S
 # def output_to_stdin(output: int) -> None:
 # 	print(f"output: {output}")
 
-def compute_output_signal_part_1(input_program: str, sequence: List[int]) -> int:
+async def compute_output_signal_part_1(input_program: str, sequence: List[int]) -> int:
 	program = list(map(int, input_program.split(",")))
 
 	current_signal = 0
@@ -132,11 +146,12 @@ def compute_output_signal_part_1(input_program: str, sequence: List[int]) -> int
 	for i, phase in enumerate(sequence):
 		input, output = Stream(), Stream()
 
-		input.write(phase)
-		input.write(current_signal)
+		asyncio.create_task(run_program(program, str(i), input, output))
 
-		run_program(program, str(i), input, output)
-		current_signal = output.read()
+		await input.write(phase)
+		await input.write(current_signal)
+
+		current_signal = await output.read()
 		
 		print(f"completed iteration {i}, signal = {current_signal}")
 		print()
@@ -149,7 +164,8 @@ def compute_part_1(input: str) -> int:
 	for i in range(0, 3125):
 		phase_attempt = convert_to_base(i, 5)
 		if len(set(phase_attempt)) == len(phase_attempt):
-			output = max(output, compute_output_signal_part_1(input, [int(char) for char in phase_attempt]))
+			new_output = asyncio.run(compute_output_signal_part_1(input, [int(char) for char in phase_attempt]))
+			output = max(output, new_output)
 	
 	return output
 
@@ -161,35 +177,40 @@ def convert_to_base(input: int, base: int) -> str:
 
 	return value.zfill(5)
 
-def compute_output_signal_part_2(input_program: str, sequence: List[int]) -> int:
+async def compute_output_signal_part_2(input_program: str, sequence: List[int]) -> int:
 	program = list(map(int, input_program.split(",")))
 
-	current_signal = 0
-
-	io = []
+	thrusters = []
+	initial_output = Stream()
+	previous_output = initial_output
 
 	for i, phase in enumerate(sequence):
 		input, output = Stream(), Stream()
-		io.append((input, output))
 
-		input.write(phase)
-		input.write(current_signal)
+		thrusters.append(asyncio.create_task(run_program(copy(program), str(i), input, output)))
 
-		run_program(program, str(i), input, output)
-		current_signal = output.read()
+		await input.write(phase)
+		previous_output.pipe(input)
 
-		print(f"completed iteration {i}, signal = {current_signal}")
-		print()
+		previous_output = output
+
+	previous_output.pipe(initial_output)
+
+	await initial_output.write(0)
+	await gather(*thrusters)
 	
-	print("starting looping")
-
-	while True:
-		pass
-	
-	return current_signal
+	return previous_output.pipe_to_output
 
 def compute_part_2(input: str) -> int:
-	return 1
+	output = 0
+
+	for i in range(0, 3125):
+		phase_attempt = convert_to_base(i, 5)
+		if len(set(phase_attempt)) == len(phase_attempt):
+			new_output = asyncio.run(compute_output_signal_part_2(input, [int(char) + 5 for char in phase_attempt]))
+			output = max(output, new_output)
+	
+	return output
 
 def main() -> int:
 	dirname = os.path.dirname(__file__)
@@ -197,8 +218,8 @@ def main() -> int:
 	with open(filename, "r") as input_file:
 		input = input_file.read()
 
-	print(f"total maximum: {compute_part_1(input)}")
-	# print(f"part2: {compute_part_2(input)}")
+	# print(f"total maximum: {compute_part_1(input)}")
+	print(f"part2: {compute_part_2(input)}")
 
 	return 0
 
