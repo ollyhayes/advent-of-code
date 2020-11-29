@@ -42,65 +42,66 @@ class ProgramInfo():
 	instance_name: str
 	relative_base: int
 
-async def op_1(index, program_info: ProgramInfo, left: Parameter, right: Parameter, output: Parameter):
+async def op_add(index, program_info: ProgramInfo, left: Parameter, right: Parameter, output: Parameter):
 	value = left.value + right.value
 	assert output.write
 	output.write(value)
 
-async def op_2(index, program_info: ProgramInfo, left: Parameter, right: Parameter, output: Parameter):
+async def op_multiply(index, program_info: ProgramInfo, left: Parameter, right: Parameter, output: Parameter):
 	value = left.value * right.value
 	assert output.write
 	output.write(value)
 
-async def op_3(index: int, program_info: ProgramInfo, position: Parameter):
+async def op_read(index: int, program_info: ProgramInfo, position: Parameter):
 	input = await program_info.input.read()
 	print(f"{program_info.instance_name}: <-- {input}")
 	assert position.write
 	position.write(input)
 
-async def op_4(index: int, program_info: ProgramInfo, output: Parameter):
+async def op_write(index: int, program_info: ProgramInfo, output: Parameter):
 	print(f"{program_info.instance_name}: --> {output.value}")
 	await program_info.output.write(output.value)
 
-async def op_5(index, program_info: ProgramInfo, if_value: Parameter, new_index: Parameter):
+async def op_set_if(index, program_info: ProgramInfo, if_value: Parameter, new_index: Parameter):
 	if if_value.value:
 		return new_index.value
 
-async def op_6(index, program_info: ProgramInfo, if_not_value: Parameter, new_index: Parameter):
+async def op_set_if_not(index, program_info: ProgramInfo, if_not_value: Parameter, new_index: Parameter):
 	if not if_not_value.value:
 		return new_index.value
 
-async def op_7(index, program_info: ProgramInfo, left: Parameter, right: Parameter, output: Parameter):
+async def op_leq(index, program_info: ProgramInfo, left: Parameter, right: Parameter, output: Parameter):
 	assert output.write
 	if left.value < right.value:
 		output.write(1)
 	else:
 		output.write(0)
 
-async def op_8(index, program_info: ProgramInfo, left: Parameter, right: Parameter, output: Parameter):
+async def op_eq(index, program_info: ProgramInfo, left: Parameter, right: Parameter, output: Parameter):
 	assert output.write
 	if left.value == right.value:
 		output.write(1)
 	else:
 		output.write(0)
 
-async def op_9(index, program_info: ProgramInfo, new_base: Parameter):
+async def op_set_base(index, program_info: ProgramInfo, new_base: Parameter):
 	program_info.relative_base = new_base.value
 
-async def op_99(index, program_info: ProgramInfo):
+async def op_terminate(index, program_info: ProgramInfo):
 	print(f"{program_info.instance_name}: terminating")
 	return len(program_info.program)
 
 ops: Dict[int, Tuple[int, Callable]] = {
-	1: (3, op_1),
-	2: (3, op_2),
-	3: (1, op_3),
-	4: (1, op_4),
-	5: (2, op_5),
-	6: (2, op_6),
-	7: (3, op_7),
-	8: (3, op_8),
-	99: (0, op_99)
+	1: (3, op_add),
+	2: (3, op_multiply),
+	3: (1, op_read),
+	4: (1, op_write),
+	5: (2, op_set_if),
+	6: (2, op_set_if_not),
+	7: (3, op_leq),
+	8: (3, op_eq),
+	9: (1, op_set_base),
+	99: (0, op_terminate)
 }
 
 async def run_program(program: List[int], instance_name: str, input: Stream, output: Stream) -> List[int]:
