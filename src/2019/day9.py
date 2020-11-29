@@ -40,6 +40,7 @@ class ProgramInfo():
 	input: Stream
 	output: Stream
 	instance_name: str
+	relative_base: int
 
 async def op_1(index, program_info: ProgramInfo, left: Parameter, right: Parameter, output: Parameter):
 	value = left.value + right.value
@@ -101,6 +102,7 @@ ops: Dict[int, Tuple[int, Callable]] = {
 
 async def run_program(program: List[int], instance_name: str, input: Stream, output: Stream) -> List[int]:
 	index = 0
+	program_info = ProgramInfo(program, input, output, instance_name, 0)
 	while index < len(program):
 		op_code_info = program[index]
 		op_code = int(str(op_code_info)[-2:])
@@ -116,15 +118,16 @@ async def run_program(program: List[int], instance_name: str, input: Stream, out
 
 		parameters = []
 		for value, parameter_type in zip_longest(parameter_values, parameter_types):
-			if parameter_type == "1":
+			if parameter_type == "1": # immediate mode
 				parameters.append(Parameter(value, None, None))
-			else:
-				parameters.append(Parameter(program[value], value, lambda value_to_write: write(value, value_to_write)))
+			else: # position/relative mode
+				position = value + program_info.relative_base if parameter_type == "2" else value
+				parameters.append(Parameter(program[position], position, lambda value_to_write: write(position, value_to_write)))
 
 		print(f"{instance_name}: i: {index}, program: {program[index:index+10]}..., parameters: {[(parameter.value, parameter.position) for parameter in parameters]}")
 		index = await operation(
 			index,
-			ProgramInfo(program, input, output, instance_name),
+			program_info,
 			*parameters) or index + 1 + parameter_count
 
 	return program
@@ -161,54 +164,10 @@ async def compute_output_signal_part_1(input_program: str, sequence: List[int]) 
 def compute_part_1(input: str) -> int:
 	output = 0
 
-	for i in range(0, 3125):
-		phase_attempt = convert_to_base(i, 5)
-		if len(set(phase_attempt)) == len(phase_attempt):
-			new_output = asyncio.run(compute_output_signal_part_1(input, [int(char) for char in phase_attempt]))
-			output = max(output, new_output)
-	
 	return output
-
-def convert_to_base(input: int, base: int) -> str:
-	value = ""
-	while input:
-		value = str(input % base) + value
-		input //= 5
-
-	return value.zfill(5)
-
-async def compute_output_signal_part_2(input_program: str, sequence: List[int]) -> int:
-	program = list(map(int, input_program.split(",")))
-
-	thrusters = []
-	initial_output = Stream()
-	previous_output = initial_output
-
-	for i, phase in enumerate(sequence):
-		input, output = Stream(), Stream()
-
-		thrusters.append(asyncio.create_task(run_program(copy(program), str(i), input, output)))
-
-		await input.write(phase)
-		previous_output.pipe(input)
-
-		previous_output = output
-
-	previous_output.pipe(initial_output)
-
-	await initial_output.write(0)
-	await gather(*thrusters)
-	
-	return previous_output.pipe_to_output
 
 def compute_part_2(input: str) -> int:
 	output = 0
-
-	for i in range(0, 3125):
-		phase_attempt = convert_to_base(i, 5)
-		if len(set(phase_attempt)) == len(phase_attempt):
-			new_output = asyncio.run(compute_output_signal_part_2(input, [int(char) + 5 for char in phase_attempt]))
-			output = max(output, new_output)
 	
 	return output
 
