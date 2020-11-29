@@ -84,6 +84,9 @@ async def op_8(index, program_info: ProgramInfo, left: Parameter, right: Paramet
 	else:
 		output.write(0)
 
+async def op_9(index, program_info: ProgramInfo, new_base: Parameter):
+	program_info.relative_base = new_base.value
+
 async def op_99(index, program_info: ProgramInfo):
 	print(f"{program_info.instance_name}: terminating")
 	return len(program_info.program)
