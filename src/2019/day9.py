@@ -34,6 +34,25 @@ class Stream():
 		# print(f"reading: {value}, queue: {self.queue}")
 		return value
 
+# @dataclass
+# class StdIn():
+# 	async def read(self) -> int:
+# 		input = await int(sys.stdin.read(1))
+
+@dataclass
+class StdOut(Stream):
+	async def write(self, value: int) -> int:
+		print(f"Output: {value}")
+
+def input_from_stdin() -> int:
+	print(f"enter value")
+	input = int(sys.stdin.read(1))
+	print(f"received: {input}")
+	return input
+
+def output_to_stdin(output: int) -> None:
+	print(f"output: {output}")
+
 @dataclass
 class ProgramInfo():
 	program: List[int]
@@ -136,15 +155,6 @@ async def run_program(program: List[int], instance_name: str, input: Stream, out
 
 	return program
 
-# def input_from_stdin() -> int:
-# 	print(f"enter value")
-# 	input = int(sys.stdin.read(1))
-# 	print(f"received: {input}")
-# 	return input
-
-# def output_to_stdin(output: int) -> None:
-# 	print(f"output: {output}")
-
 async def compute_output_signal_part_1(input_program: str, sequence: List[int]) -> int:
 	program = list(map(int, input_program.split(",")))
 
@@ -165,10 +175,14 @@ async def compute_output_signal_part_1(input_program: str, sequence: List[int]) 
 	
 	return current_signal
 
-def compute_part_1(input: str) -> int:
-	output = 0
+def compute_part_1(input_program: str) -> None:
+	program = list(map(int, input_program.split(",")))
+	program = [109,1,204,-1,1001,100,1,100,1008,100,16,101,1006,101,0,99]
 
-	return output
+	input, output = Stream(), StdOut()
+
+	asyncio.run(run_program(program, "main", input, output))
+
 
 def compute_part_2(input: str) -> int:
 	output = 0
@@ -181,8 +195,9 @@ def main() -> int:
 	with open(filename, "r") as input_file:
 		input = input_file.read()
 
+	compute_part_1(input)
 	# print(f"total maximum: {compute_part_1(input)}")
-	print(f"part2: {compute_part_2(input)}")
+	# print(f"part2: {compute_part_2(input)}")
 
 	return 0
 
