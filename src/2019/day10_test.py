@@ -61,9 +61,8 @@ t4 = """.#..##.###...#######
 	("field", "best_position", "astroids_detected"),
 	( t1, t2, t3, t4 )
 )
-@pytest.mark.asyncio
-async def test_part_1(field: str, best_position: Tuple[int, int], astroids_detected: int) -> None:
-	assert await compute_part_1(field) == best_position, astroids_detected
+def test_part_1(field: str, best_position: Tuple[int, int], astroids_detected: int) -> None:
+	assert compute_part_1(field) == (best_position, astroids_detected)
 
 # @pytest.mark.parametrize(
 # 	("program", "sequence", "expected"),
