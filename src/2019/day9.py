@@ -17,12 +17,10 @@ class Parameter():
 class Stream():
 	queue: Queue = field(default_factory=lambda: asyncio.Queue(1))
 	pipe_to: Optional["Stream"] = None
-	pipe_to_output: int = 0
 
 	async def write(self, value: int) -> None:
 		if self.pipe_to:
 			await self.pipe_to.write(value)
-			self.pipe_to_output = value
 		else:
 			await self.queue.put(value)
 
