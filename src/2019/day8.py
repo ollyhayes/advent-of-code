@@ -39,7 +39,7 @@ def compute_part_1(input: str) -> int:
 
 	return 0
 
-def compute_part_2(input: str) -> int:
+def compute_part_2(input: str) -> None:
 	width = 25
 	height = 6
 	position = 0
