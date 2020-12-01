@@ -71,7 +71,7 @@ def compute_part_1(input: str) -> Tuple[Tuple[int, int], int]:
 					if x_diff == 0 and y_diff == 0:
 						continue
 
-					direction = simplify_fraction(x_diff, y_diff)
+					direction = get_angle((x_diff, y_diff))
 
 					hits[direction] = hits.get(direction, []) + [(x_diff, y_diff)]
 			
@@ -84,9 +84,14 @@ def compute_part_1(input: str) -> Tuple[Tuple[int, int], int]:
 	return best_position, max_asteroids_detected
 
 def get_angle(position: Tuple[int, int]) -> float:
-	if position[0] == 0:
-		return pi / 2
-	return atan(position[1] / position[0])
+	angle = atan(position[1] / position[0]) if position[0] else pi / 2
+
+	# no idea about this, maybe go back to dictionary keyed on quotient or something
+	return angle if position[x] <= 0 else angle + 5 * pi
+
+	# if position[0] == 0:
+	# 	return pi / 2 if position[1] > 0 else -pi / 2
+	# return atan(position[1] / position[0])
 
 def main() -> int:
 	dirname = os.path.dirname(__file__)
