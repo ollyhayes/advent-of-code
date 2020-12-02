@@ -97,6 +97,52 @@ def compute_part_1(input: str) -> Tuple[Tuple[int, int], int]:
 	
 	return best_position, max_asteroids_detected
 
+def compute_part_2(input: str, x_pos: int, y_pos: int, nth_asteroid: int) -> Tuple[int, int]:
+	rows = input.split("\n")
+	width = len(rows[0])
+	height = len(rows)
+
+	hits = calculate_hits(rows, x_pos, y_pos, width, height)
+
+	for angle, positions in hits.items():
+		hits[angle] = sorted(positions, key=lambda position: position[0] * position[0] + position[1] * position[1], reverse=True)
+
+	nth = 1
+	print_grid(rows, x_pos, y_pos, "|")
+
+	while hits:
+		ordered_hits = sorted(hits.keys())
+		
+		for angle in ordered_hits:
+			positions2 = hits.get(angle)
+
+			if positions2:
+				position = positions2.pop()
+			else:
+				continue
+
+			# print_grid(rows, x_pos + position[0], y_pos + position[1], "█")
+
+			if nth == nth_asteroid:
+				return (position[0] + x_pos, position[1] + y_pos)
+
+			nth += 1
+
+	raise Exception("not found")
+
+def print_grid(rows: List[str], x_pos: int, y_pos: int, char: str) -> None:
+
+	for y in range(0, len(rows)):
+		if y == y_pos:
+			as_list = list(rows[y_pos])
+			as_list[x_pos] = char
+			rows[y_pos] = "".join(as_list)
+
+		print(rows[y])
+
+	print()
+
+
 def main() -> int:
 	dirname = os.path.dirname(__file__)
 	filename = os.path.join(dirname, "day10_input.txt")
@@ -104,6 +150,7 @@ def main() -> int:
 		input = input_file.read()
 
 	print(compute_part_1(input))
+	print(compute_part_2(input, 26, 29, 200))
 
 	return 0
 
