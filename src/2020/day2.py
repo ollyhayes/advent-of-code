@@ -3,10 +3,6 @@ from typing import List
 import os
 import re
 
-# 12:31:30
-# 12:33:04 1m34
-# 12:34:04 1m	, total 2.34
-
 regex = re.compile('(\d+)-(\d+) (\w): (\w+)')
 
 def compute_part_1(input: str) -> int:
@@ -18,8 +14,6 @@ def compute_part_1(input: str) -> int:
 
 	for line in lines:
 		min, max, letter, password = regex.findall(line)[0]
-
-		# print(password.count(letter))
 
 		if int(min) <= password.count(letter)  <= int(max):
 			valid += 1

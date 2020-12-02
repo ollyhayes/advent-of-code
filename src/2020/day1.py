@@ -1,11 +1,6 @@
 from math import floor
 from typing import List
 import os
-import pytest
-
-# 12:31:30
-# 12:33:04 1m34
-# 12:34:04 1m	, total 2.34
 
 def compute_part_1(input: str) -> int:
 	lines = list(map(int, input.split("\n")))
