@@ -45,6 +45,14 @@ def simplify_fraction(x: int, y: int) -> Tuple[int, int]:
 
 	return x // highest_common_factor, y // highest_common_factor
 
+def get_angle(position: Tuple[int, int]) -> float:
+	if position[0] == 0:
+		return 0 if position[1] < 0 else pi
+	
+	angle = atan(position[1] / position[0])
+
+	return angle + (pi / 2 if position[0] > 0 else 3 * pi / 2)
+
 def compute_part_1(input: str) -> Tuple[Tuple[int, int], int]:
 	rows = input.split("\n")
 	WIDTH = len(rows[0])
@@ -58,7 +66,7 @@ def compute_part_1(input: str) -> Tuple[Tuple[int, int], int]:
 			if rows[y_pos][x_pos] == ".":
 				continue
 
-			hits: Dict[Tuple[int, int], List[Tuple[int, int]]] = {}
+			hits: Dict[float, List[Tuple[int, int]]] = {}
 
 			for y_tar in range(0, HEIGHT):
 				for x_tar in range(0, WIDTH):
@@ -71,6 +79,7 @@ def compute_part_1(input: str) -> Tuple[Tuple[int, int], int]:
 					if x_diff == 0 and y_diff == 0:
 						continue
 
+					# direction = simplify_fraction((x_diff, y_diff))
 					direction = get_angle((x_diff, y_diff))
 
 					hits[direction] = hits.get(direction, []) + [(x_diff, y_diff)]
@@ -83,16 +92,6 @@ def compute_part_1(input: str) -> Tuple[Tuple[int, int], int]:
 	
 	return best_position, max_asteroids_detected
 
-def get_angle(position: Tuple[int, int]) -> float:
-	angle = atan(position[1] / position[0]) if position[0] else pi / 2
-
-	# no idea about this, maybe go back to dictionary keyed on quotient or something
-	return angle if position[x] <= 0 else angle + 5 * pi
-
-	# if position[0] == 0:
-	# 	return pi / 2 if position[1] > 0 else -pi / 2
-	# return atan(position[1] / position[0])
-
 def main() -> int:
 	dirname = os.path.dirname(__file__)
 	filename = os.path.join(dirname, "day10_input.txt")
@@ -104,5 +103,4 @@ def main() -> int:
 	return 0
 
 if __name__ == '__main__':
-	# print(simplify_fraction(-28, 4))
 	exit(main())
