@@ -10,7 +10,7 @@ def compute_part_1(input: str) -> int:
 	opens = 0
 	position = (0, 0)
 
-	for line in lines:
+	while position[
 		position = add(position, (3, 1))
 		
 		val = lines[position[1]][position[0]]
