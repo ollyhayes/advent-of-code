@@ -1,18 +1,18 @@
 from math import floor
-from typing import List
+from typing import List, Tuple
 import os
 
-def compute_part_1(input: str) -> int:
+def compute_part_1(input: str, direction: Tuple[int, int]) -> int:
 	# lines = list(map(int, input.split("\n")))
 	lines = input.split("\n")
+
+	width = len(lines[0])
 
 	trees = 0
 	opens = 0
 	position = (0, 0)
 
-	while position[
-		position = add(position, (3, 1))
-		
+	while position[1] < len(lines):
 		val = lines[position[1]][position[0]]
 
 		if val == "#":
@@ -20,16 +20,34 @@ def compute_part_1(input: str) -> int:
 		else:
 			opens += 1
 
+		position = add(position, direction, width)
+
+		# if position[0] > width:
+		# 	position = (position[0] - width, position[1])
+		
 	print(trees)
 	print(opens)
 
-	return 0
+	return trees
 
-def add(x, y):
-	return x[0] + y[0], x[1] + y[1]
+def add(x, y, width):
+	return (x[0] + y[0]) % width, x[1] + y[1]
 
 def compute_part_2(input: str) -> int:
-	pass
+	slopes = [
+		(1, 1),
+		(3, 1),
+		(5, 1),
+		(7, 1),
+		(1, 2),
+	]
+	total_trees_multiplied = 1
+
+	for slope in slopes:
+		trees = compute_part_1(input, slope)
+		total_trees_multiplied *= trees
+
+	return total_trees_multiplied
 
 def main() -> int:
 	dirname = os.path.dirname(__file__)
@@ -37,7 +55,7 @@ def main() -> int:
 	with open(filename, "r") as input_file:
 		input = input_file.read()
 
-	print(compute_part_1(input))
+	print(compute_part_1(input, (3, 1)))
 	print(compute_part_2(input))
 
 	return 0
