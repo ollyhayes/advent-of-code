@@ -18,7 +18,7 @@ t1 = """..##.......
 
 @pytest.mark.parametrize(
 	("field", "direction", "trees"),
-	(t1, ("",(0,0),1))
+	(t1, t1)
 )
 def test_part_1(field: str, direction: Tuple[int, int], trees: int) -> None:
 	assert compute_part_1(field, direction) == trees
