@@ -15,7 +15,6 @@ def compute_part_1(input: str) -> int:
 
 		for person in people:
 			group_yes_answers |= set(person)
-				# group_yes_answers.add(answer)
 		
 		summed_group_yes_answers += len(group_yes_answers)
 
