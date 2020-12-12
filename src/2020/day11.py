@@ -8,9 +8,11 @@ Vector = Tuple[int, int]
 def add(x: Vector, y: Vector) -> Vector:
 	return x[0] + y[0], x[1] + y[1]
 
-def compute_part_1(input: str) -> int:
+def multiply(x: Vector, y: int) -> Vector:
+	return x[0] * y, x[1] * y
+
+def compute(input: str, uncomfortable_neighbour_count: int, look_through_empties: bool) -> int:
 	rows = [list(row) for row in input.split("\n")]
-	total = 0
 	width = len(rows[0])
 	height = len(rows)
 
@@ -25,11 +27,22 @@ def compute_part_1(input: str) -> int:
 		(-1,-1),
 	]
 
-	def is_occupied(rows: List[List[str]], position: Vector) -> bool:
-		if not 0 <= position[0] < width or not 0 <= position[1] < height:
+	def is_occupied(rows: List[List[str]], position: Vector, direction: Vector, magnitude: int = 1) -> bool:
+		target_position = add(position, multiply(direction, magnitude))
+
+		if not 0 <= target_position[0] < width or not 0 <= target_position[1] < height:
 			return False
+
+		seat = rows[target_position[1]][target_position[0]]
 		
-		return rows[position[1]][position[0]] == "#"
+		if seat == "#":
+			return True
+		elif seat == "L":
+			return False
+		elif not look_through_empties:
+			return False
+		else:
+			return is_occupied(rows, position, direction, magnitude + 1)
 
 	def apply_round(rows: List[List[str]]) -> Tuple[List[List[str]], int]:
 		next_round = deepcopy(rows)
@@ -41,12 +54,12 @@ def compute_part_1(input: str) -> int:
 				if seat == ".":
 					continue
 
-				occupied_count = sum(is_occupied(rows, add((x,y), surrounding)) for surrounding in surroundings)
+				occupied_count = sum(is_occupied(rows, (x,y), surrounding) for surrounding in surroundings)
 
 				if seat == "L" and occupied_count == 0:
 					next_round[y][x] = "#"
 					change_count += 1
-				elif seat == "#" and occupied_count >= 4:
+				elif seat == "#" and occupied_count >= uncomfortable_neighbour_count:
 					next_round[y][x] = "L"
 					change_count += 1
 
@@ -56,30 +69,21 @@ def compute_part_1(input: str) -> int:
 		rows, count = apply_round(rows)
 		if count == 0:
 			break
-			
-	for row in rows:
-		print("".join(row))
+
+	# for row in rows:
+	# 	print("".join(row))
 
 	occupied = sum(seat == "#" for row in rows for seat in row)
 
 	return occupied
-
-def compute_part_2(input: str) -> int:
-	rows = input.split("\n")
-	total = 0
-
-	for row in rows:
-		pass
-
-	return total
 
 def main() -> int:
 	input_filename = f"{__file__.split('.')[0]}_input.txt"
 	with open(input_filename, "r") as input_file:
 		input = input_file.read()
 
-	print(compute_part_1(input))
-	print(compute_part_2(input))
+	print(compute(input, 4, False))
+	print(compute(input, 5, True))
 
 	return 0
 
