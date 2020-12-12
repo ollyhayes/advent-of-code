@@ -3,17 +3,6 @@ import click
 import shutil
 import os
 
-# DAY_NUMBER=$1
-# YEAR_NUMBER=2020
-# DIR="$(dirname "${BASH_SOURCE[0]}")"
-# DIR="$(realpath "${DIR}")"   
-
-# echo $DIR"/"$YEAR_NUMBER"/"
-
-# 	input_filename = f"{__file__.split('.')[0]}_input.txt"
-
-# cp template /
-
 @click.command()
 @click.argument('day', required=True, type=int)
 @click.argument('year', default=2020, type=int)

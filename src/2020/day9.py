@@ -42,6 +42,8 @@ def compute_part_2(input: str, interval: int, invalid_number: int) -> int:
 			operands = rows[result[0]:result[1]]
 			return min(operands) + max(operands)
 
+	raise Exception()
+
 def main() -> int:
 	dirname = os.path.dirname(__file__)
 	filename = os.path.join(dirname, "day9_input.txt")
