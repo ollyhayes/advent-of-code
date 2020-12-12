@@ -12,8 +12,8 @@ def main(day: int, year: int) -> int:
 
 	src_dir = os.path.dirname(__file__)
 	template = os.path.join(src_dir, "template.py")
-	script_file = os.path.join(src_dir, str(year), f"day{day}.py")
-	input_file = os.path.join(src_dir, str(year), f"day{day}_input.txt")
+	script_file = os.path.join(src_dir, str(year), f"day{day:02}.py")
+	input_file = os.path.join(src_dir, str(year), f"day{day:02}_input.txt")
 
 	shutil.copyfile(template, script_file)
 
