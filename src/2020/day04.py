@@ -81,7 +81,7 @@ def test():
 
 def main() -> int:
 	dirname = os.path.dirname(__file__)
-	filename = os.path.join(dirname, "day4_input.txt")
+	filename = os.path.join(dirname, "day04_input.txt")
 	with open(filename, "r") as input_file:
 		input = input_file.read()
 

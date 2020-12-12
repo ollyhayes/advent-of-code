@@ -38,7 +38,7 @@ def compute_part_2(input: str) -> int:
 
 def main() -> int:
 	dirname = os.path.dirname(__file__)
-	filename = os.path.join(dirname, "day5_input.txt")
+	filename = os.path.join(dirname, "day05_input.txt")
 	with open(filename, "r") as input_file:
 		input = input_file.read()
 

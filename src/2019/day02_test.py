@@ -1,6 +1,6 @@
 import pytest
 from typing import List
-from day2 import compute_part_1
+from day02 import compute_part_1
 
 @pytest.mark.parametrize(
 	("input", "expected"),

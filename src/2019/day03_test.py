@@ -1,5 +1,5 @@
 import pytest
-from day3 import compute_part_1, compute_part_2
+from day03 import compute_part_1, compute_part_2
 
 @pytest.mark.parametrize(
 	("input", "expected"),

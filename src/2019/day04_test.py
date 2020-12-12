@@ -1,5 +1,5 @@
 import pytest
-from day4 import is_valid
+from day04 import is_valid
 
 @pytest.mark.parametrize(
 	("input", "expected"),

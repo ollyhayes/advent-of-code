@@ -1,6 +1,6 @@
 import os
 import pytest
-from day7 import compute_output_signal_part_1, compute_output_signal_part_2
+from day07 import compute_output_signal_part_1, compute_output_signal_part_2
 from typing import List, Tuple, Dict, Set, Callable, Optional, Union, Protocol
 
 @pytest.mark.parametrize(

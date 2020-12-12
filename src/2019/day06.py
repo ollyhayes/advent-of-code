@@ -55,7 +55,7 @@ def draw_system(planets: List[Planet]) -> None:
 	tree_drawing = "\n".join(output)
 
 	dirname = os.path.dirname(__file__)
-	filename = os.path.join(dirname, "day6_output_tree.txt")
+	filename = os.path.join(dirname, "day06_output_tree.txt")
 	with open(filename, "w") as output_file:
 		output_file.write(tree_drawing)
 
@@ -99,7 +99,7 @@ def compute_part_2(input: str) -> int:
 
 def main() -> int:
 	dirname = os.path.dirname(__file__)
-	filename = os.path.join(dirname, "day6_input.txt")
+	filename = os.path.join(dirname, "day06_input.txt")
 	with open(filename, "r") as input_file:
 		input = input_file.read()
 
