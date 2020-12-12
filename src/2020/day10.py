@@ -35,7 +35,7 @@ def compute_part_1(input: str, interval: int) -> int:
 			adapters.remove(adapter)
 			current_joltage = adapter
 
-	return diffs
+	return diffs # multiply [1] * [3] + 1
 
 def compute_part_2(input: str, interval: int, invalid_number: int) -> int:
 	return 0

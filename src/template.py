@@ -1,27 +1,26 @@
 from math import floor
-from typing import List
+from typing import Dict, List, Tuple, Optional
 import os
 
 def compute_part_1(input: str) -> int:
-	lines = list(map(int, input.split("\n")))
-	# lines = input.split("\n")
+	rows = list(map(int, input.split("\n")))
+	# rows = input.split("\n")
+	total = 0
 
-	for x in lines:
-		for y in lines:
-				if x + y == 2020:
-					return x * y
-	return 0
+	for row in rows:
+		pass
+
+	return total
 
 def compute_part_2(input: str) -> int:
-	lines = list(map(int, input.split("\n")))
-	# lines = input.split("\n")
+	rows = list(map(int, input.split("\n")))
+	# rows = input.split("\n")
+	total = 0
 
-	for x in lines:
-		for y in lines:
-			for z in lines:
-				if x + y + z == 2020:
-					return x * y * z
-	return 0
+	for row in rows:
+		pass
+
+	return total
 
 def main() -> int:
 	input_filename = f"{__file__.split('.')[0]}_input.txt"
