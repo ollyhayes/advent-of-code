@@ -16,7 +16,7 @@ def compute(input: str, uncomfortable_neighbour_count: int, look_through_empties
 	width = len(rows[0])
 	height = len(rows)
 
-	surroundings: List[Vector] = [
+	neighbours: List[Vector] = [
 		(1,1),
 		(1,0),
 		(1,-1),
@@ -54,7 +54,7 @@ def compute(input: str, uncomfortable_neighbour_count: int, look_through_empties
 				if seat == ".":
 					continue
 
-				occupied_count = sum(is_occupied(rows, (x,y), surrounding) for surrounding in surroundings)
+				occupied_count = sum(is_occupied(rows, (x,y), neighbour) for neighbour in neighbours)
 
 				if seat == "L" and occupied_count == 0:
 					next_round[y][x] = "#"
@@ -65,8 +65,11 @@ def compute(input: str, uncomfortable_neighbour_count: int, look_through_empties
 
 		return next_round, change_count
 	
+	round = 0
 	while True:
+		round += 1
 		rows, count = apply_round(rows)
+		print(f"round: {round:05}, changes: {count}")
 		if count == 0:
 			break
 
