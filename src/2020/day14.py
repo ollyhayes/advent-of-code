@@ -21,8 +21,7 @@ def compute_part_1(input: str) -> int:
 
 	return sum(values.values())
 
-def generate_float_masks(x_mask: str, on_mask) -> List[int]:
-	# "00000XX0000000000X0X0000000000000X00"
+def apply_x_masks(x_mask: str, initial_value) -> List[int]:
 	indices = []
 
 	for index, character in enumerate(reversed(x_mask)):
@@ -33,14 +32,16 @@ def generate_float_masks(x_mask: str, on_mask) -> List[int]:
 	masks = []
 
 	for i in range(0, permetations):
-		configuration = f"{i:b}"
-		mask = on_mask
+		configuration = f"{i:b}".zfill(len(indices))
+		mask = initial_value
 
 		for index, bit in enumerate(reversed(configuration)):
 			if bit == "1":
 				mask |= 1 << indices[index]
+			elif bit == "0":
+				mask &= ~(1 << indices[index])
 
-		print(f"{mask:b}")
+		# print(f"{mask:036b}")
 		masks.append(mask)
 
 	return masks
@@ -48,22 +49,20 @@ def generate_float_masks(x_mask: str, on_mask) -> List[int]:
 
 def compute_part_2(input: str) -> int:
 	rows = input.split("\n")
-	# on_mask = 0
-	float_masks = []
 	values: Dict[int, int] = {}
+	on_mask = 0
+	float_mask = ''
 
 	for row in rows:
 		field, value = row.split(" = ")
 		if field == "mask":
 			on_mask = int(value.replace("X", "0"), 2)
-			float_masks = generate_float_masks(value.replace("1", "0"), on_mask)
+			float_mask = value.replace("1", "0")
 		else:
 			address = int(field.replace('mem[', '').replace(']', ''))
 
-			for float_mask in float_masks:
-				masked_address = address | float_mask
-				values[masked_address] = int(value)
-
+			for address in apply_x_masks(float_mask, address | on_mask):
+				values[address] = int(value)
 
 	return sum(values.values())
 
