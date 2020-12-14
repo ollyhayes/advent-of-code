@@ -21,47 +21,47 @@ def compute_part_1(input: str) -> int:
 
 	return sum(values.values())
 
-def apply_x_masks(x_mask: str, initial_value) -> List[int]:
-	indices = []
+def apply_x_masks(x_mask: str, initial_value: int) -> List[int]:
+	x_indices = []
 
 	for index, character in enumerate(reversed(x_mask)):
 		if character == "X":
-			indices.append(index)
+			x_indices.append(index)
 
-	permetations = pow(2, len(indices))
-	masks = []
+	number_of_permutations = pow(2, len(x_indices))
+	outputs = []
 
-	for i in range(0, permetations):
-		configuration = f"{i:b}".zfill(len(indices))
-		mask = initial_value
+	for i in range(0, number_of_permutations):
+		permutation = f"{i:b}".zfill(len(x_indices))
+		value = initial_value
 
-		for index, bit in enumerate(reversed(configuration)):
+		for index, bit in enumerate(reversed(permutation)):
 			if bit == "1":
-				mask |= 1 << indices[index]
+				value |= 1 << x_indices[index]
 			elif bit == "0":
-				mask &= ~(1 << indices[index])
+				value &= ~(1 << x_indices[index])
 
 		# print(f"{mask:036b}")
-		masks.append(mask)
+		outputs.append(value)
 
-	return masks
+	return outputs
 
 
 def compute_part_2(input: str) -> int:
 	rows = input.split("\n")
 	values: Dict[int, int] = {}
 	on_mask = 0
-	float_mask = ''
+	x_mask = ''
 
 	for row in rows:
 		field, value = row.split(" = ")
 		if field == "mask":
 			on_mask = int(value.replace("X", "0"), 2)
-			float_mask = value.replace("1", "0")
+			x_mask = value.replace("1", "0")
 		else:
 			address = int(field.replace('mem[', '').replace(']', ''))
 
-			for address in apply_x_masks(float_mask, address | on_mask):
+			for address in apply_x_masks(x_mask, address | on_mask):
 				values[address] = int(value)
 
 	return sum(values.values())
